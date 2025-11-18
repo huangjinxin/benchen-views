@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>值班播报记录 - 北辰幼儿园</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .main-title {
+            text-align: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-shadow: 0 3px 15px rgba(0,0,0,0.3);
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .page-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .input-box, .select-box {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        .input-box:focus, .select-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .select-box {
+            cursor: pointer;
+        }
+
+        textarea.input-box {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #667eea;
+            margin: 30px 0 20px 0;
+            font-weight: 600;
+            padding-left: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #5c6bc0, #3f4da3);
+        }
+
+        .notification {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 18px 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            font-weight: 600;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 打印预览模态框样式 */
+        .print-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .print-modal.active {
+            display: block;
+        }
+
+        .print-modal-content {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .print-close-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1001;
+        }
+
+        .print-close-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .print-actions {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1001;
+        }
+
+        /* 打印内容样式 - 参考提供的模版 */
+        .duty-report-print {
+            font-family: 'Microsoft YaHei', sans-serif;
+            padding: 40px;
+            background: white;
+        }
+
+        .report-header {
+            text-align: center;
+            padding: 25px 0;
+            border-bottom: 3px solid #5c6bc0;
+            margin-bottom: 30px;
+        }
+
+        .report-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3f4da3;
+            margin-bottom: 15px;
+        }
+
+        .report-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .report-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-meta-item .icon {
+            color: #5c6bc0;
+            font-size: 18px;
+        }
+
+        .nav-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            border: 2px solid #5c6bc0;
+            background: white;
+            color: #5c6bc0;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #5c6bc0, #3f4da3);
+            color: white;
+        }
+
+        .nav-btn:hover {
+            background: #5c6bc0;
+            color: white;
+        }
+
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .data-item {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e8ecff;
+            border-left: 4px solid #5c6bc0;
+            transition: all 0.3s;
+        }
+
+        .data-item:hover {
+            box-shadow: 0 4px 12px rgba(92, 107, 192, 0.15);
+            border-color: #5c6bc0;
+        }
+
+        .data-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3f4da3;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .data-content {
+            color: #333;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .guide-item {
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            border: 2px solid #e8ecff;
+            border-left: 4px solid #5c6bc0;
+        }
+
+        .guide-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3f4da3;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guide-text {
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .data-grid, .guide-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            /* 隐藏所有非打印内容 */
+            .wrapper, .notification {
+                display: none !important;
+            }
+
+            .print-close-btn, .print-actions, .nav-toggle {
+                display: none !important;
+            }
+
+            .print-modal {
+                display: block !important;
+                position: static;
+                background: white;
+                padding: 0;
+            }
+
+            .print-modal-content {
+                box-shadow: none;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .section-content {
+                display: block !important;
+            }
+
+            .section-content.guide-section {
+                display: none !important;
+            }
+
+            /* 保持预览效果，不做缩放 */
+            body {
+                margin: 0;
+            }
+
+            .data-item {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="main-title">📢 值班播报记录</div>
+
+        <div class="container">
+            <div class="page-title">填写值班播报</div>
+
+            <!-- 基本信息 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">📅 日期</label>
+                    <input type="date" class="input-box" id="date">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🌤️ 天气</label>
+                    <select class="select-box" id="weather">
+                        <option value="">请选择天气</option>
+                        <option value="☀️ 晴天">☀️ 晴天</option>
+                        <option value="⛅ 多云">⛅ 多云</option>
+                        <option value="☁️ 阴天">☁️ 阴天</option>
+                        <option value="🌧️ 雨天">🌧️ 雨天</option>
+                        <option value="❄️ 雪天">❄️ 雪天</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">🏫 园区</label>
+                    <select class="select-box" id="campus">
+                        <option value="">请选择园区</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">👔 值班领导</label>
+                    <select class="select-box" id="dutyLeader">
+                        <option value="">请选择值班领导</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 播报内容 -->
+            <div class="section-title">📝 播报内容</div>
+
+            <div class="form-group">
+                <label class="form-label">👥 出勤情况</label>
+                <textarea class="input-box" id="attendance" placeholder="填写提示：教师出勤情况、幼儿出勤情况。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🚪 入园离园</label>
+                <textarea class="input-box" id="entryExit" placeholder="填写提示：①晨间检查、晨间锻炼情况；②入园、离园幼儿精神面貌；③校车接送；④离园管理。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">📚 学习活动</label>
+                <textarea class="input-box" id="learningActivity" placeholder="填写提示：①上午观察：活动组织、活动实施、活动效果；②下午观察：活动组织、活动实施、活动效果。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🎨 区域活动</label>
+                <textarea class="input-box" id="areaActivity" placeholder="填写提示：①活动组织、实施、效果；②幼儿兴趣、常规、材料投放。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">⚽ 户外活动</label>
+                <textarea class="input-box" id="outdoorActivity" placeholder="填写提示：①观察组织实施、幼儿精神面貌；②安全监护；③户外活动器械使用保管。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🏃 生活活动</label>
+                <textarea class="input-box" id="lifeActivity" placeholder="填写提示：①盥洗、喝水、如厕；②午睡的组织情况；③幼儿离园活动。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">💡 温馨提示</label>
+                <textarea class="input-box" id="notice" placeholder="填写提示：提醒事项、注意事项等。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🛡️ 校园安全</label>
+                <textarea class="input-box" id="safety" placeholder="填写提示：①安全检查：水、电、气、门窗、围墙、大型玩具等；②幼儿安全管理；③外来人员、车辆管理；④其他。"></textarea>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button class="btn btn-save" onclick="saveReport()">💾 保存播报</button>
+                <button class="btn btn-print" onclick="printPreview()">🖨️ 打印预览</button>
+                <button class="btn btn-view" onclick="window.location.href='duty-reports.html'">📚 查看记录</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <!-- 打印预览模态框 -->
+    <div class="print-modal" id="printModal">
+        <button class="print-close-btn" onclick="closePrintModal()">✕</button>
+        <div class="print-modal-content">
+            <div class="duty-report-print" id="printContent">
+                <!-- 打印内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+        <div class="print-actions">
+            <button class="btn btn-print" onclick="window.print()">🖨️ 打印</button>
+            <button class="btn btn-view" onclick="closePrintModal()">关闭预览</button>
+        </div>
+    </div>
+
+    <script src="api-config.js"></script>
+    <script>
+        async function init() {
+            console.log('初始化值班播报表单...');
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+
+            // 加载关联数据
+            try {
+                console.log('开始加载关联数据...');
+                await DataTransformer.loadReferenceData(apiClient);
+                console.log('关联数据加载完成');
+                console.log('缓存状态:', DataTransformer.cache);
+
+                populateSelectOptions();
+                loadFromCache();
+            } catch (error) {
+                console.error('❌ 加载数据失败:', error);
+                console.error('错误详情:', error.stack);
+                showNotification('⚠️ 加载数据失败，请刷新页面重试', true);
+            }
+
+            setupAutoSave();
+            console.log('初始化完成');
+        }
+
+        function populateSelectOptions() {
+            console.log('开始填充下拉框选项...');
+
+            // 填充园区
+            const campusSelect = document.getElementById('campus');
+            console.log('园区数据:', DataTransformer.cache.campuses);
+
+            if (DataTransformer.cache.campuses) {
+                DataTransformer.cache.campuses.forEach(campus => {
+                    const option = document.createElement('option');
+                    option.value = campus.name;
+                    option.textContent = campus.name;
+                    campusSelect.appendChild(option);
+                });
+                console.log(`✅ 已填充 ${DataTransformer.cache.campuses.length} 个园区`);
+            } else {
+                console.warn('⚠️ 园区数据为空');
+            }
+
+            // 填充值班领导
+            const leaderSelect = document.getElementById('dutyLeader');
+            console.log('领导数据:', DataTransformer.cache.leaders);
+
+            if (DataTransformer.cache.leaders) {
+                const leaderList = DataTransformer.cache.leaders.data || DataTransformer.cache.leaders;
+                console.log('处理后的领导列表:', leaderList);
+
+                if (Array.isArray(leaderList) && leaderList.length > 0) {
+                    leaderList.forEach(leader => {
+                        const option = document.createElement('option');
+                        option.value = leader.name;
+                        option.textContent = leader.name;
+                        leaderSelect.appendChild(option);
+                    });
+                    console.log(`✅ 已填充 ${leaderList.length} 个值班领导`);
+                } else {
+                    console.warn('⚠️ 值班领导列表为空或不是数组');
+                }
+            } else {
+                console.warn('⚠️ 值班领导数据为空');
+                console.warn('可能原因：后端没有LEADER角色的用户');
+            }
+
+            console.log('下拉框选项填充完成');
+        }
+
+        async function saveReport() {
+            console.log('开始保存值班播报...');
+
+            // 验证必填字段
+            const date = document.getElementById('date').value;
+            const weather = document.getElementById('weather').value;
+            const campus = document.getElementById('campus').value;
+            const dutyLeader = document.getElementById('dutyLeader').value;
+
+            console.log('表单数据:', { date, weather, campus, dutyLeader });
+
+            if (!date || !weather || !campus || !dutyLeader) {
+                console.warn('必填字段未填写完整');
+                showNotification('请填写完整的基本信息', true);
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '💾 保存中...';
+            btn.disabled = true;
+
+            try {
+                console.log('查找园区ID...');
+                const campusId = DataTransformer.findCampusIdByName(campus);
+                console.log('园区ID:', campusId);
+
+                console.log('查找值班领导ID...');
+                const dutyLeaderId = DataTransformer.findLeaderIdByName(dutyLeader);
+                console.log('值班领导ID:', dutyLeaderId);
+
+                if (!campusId) {
+                    console.error('找不到园区:', campus);
+                    console.error('可用园区:', DataTransformer.cache.campuses);
+                    throw new Error(`找不到园区"${campus}"的ID，请确保选择了正确的园区`);
+                }
+
+                if (!dutyLeaderId) {
+                    console.error('找不到值班领导:', dutyLeader);
+                    console.error('可用领导:', DataTransformer.cache.leaders);
+                    throw new Error(`找不到值班领导"${dutyLeader}"的ID，请确保后端有该领导数据`);
+                }
+
+                // 收集数据
+                const data = {
+                    date,
+                    weather,
+                    campusId,
+                    dutyLeaderId,
+                    attendance: document.getElementById('attendance').value || undefined,
+                    entryExit: document.getElementById('entryExit').value || undefined,
+                    learningActivity: document.getElementById('learningActivity').value || undefined,
+                    areaActivity: document.getElementById('areaActivity').value || undefined,
+                    outdoorActivity: document.getElementById('outdoorActivity').value || undefined,
+                    lifeActivity: document.getElementById('lifeActivity').value || undefined,
+                    notice: document.getElementById('notice').value || undefined,
+                    safety: document.getElementById('safety').value || undefined
+                };
+
+                console.log('准备提交的数据:', data);
+
+                console.log('调用API保存...');
+                const response = await apiClient.createDutyReport(data);
+                console.log('API响应:', response);
+
+                showNotification('✅ 保存成功！');
+
+                // 清除缓存
+                localStorage.removeItem('dutyReportFormData');
+
+                setTimeout(() => {
+                    if (confirm('保存成功！是否要清空表单？')) {
+                        clearForm();
+                    }
+                }, 1500);
+            } catch (error) {
+                console.error('❌ 保存错误:', error);
+                console.error('错误堆栈:', error.stack);
+                showNotification('❌ 保存失败：' + error.message, true);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function clearForm() {
+            document.querySelectorAll('.input-box, .select-box').forEach(input => {
+                if (input.type === 'date') {
+                    input.value = new Date().toISOString().split('T')[0];
+                } else {
+                    input.value = '';
+                }
+            });
+        }
+
+        function saveToCache() {
+            const data = {
+                date: document.getElementById('date').value,
+                weather: document.getElementById('weather').value,
+                campus: document.getElementById('campus').value,
+                dutyLeader: document.getElementById('dutyLeader').value,
+                attendance: document.getElementById('attendance').value,
+                entryExit: document.getElementById('entryExit').value,
+                learningActivity: document.getElementById('learningActivity').value,
+                areaActivity: document.getElementById('areaActivity').value,
+                outdoorActivity: document.getElementById('outdoorActivity').value,
+                lifeActivity: document.getElementById('lifeActivity').value,
+                notice: document.getElementById('notice').value,
+                safety: document.getElementById('safety').value
+            };
+            localStorage.setItem('dutyReportFormData', JSON.stringify(data));
+        }
+
+        function loadFromCache() {
+            try {
+                const cached = localStorage.getItem('dutyReportFormData');
+                if (!cached) return;
+
+                const data = JSON.parse(cached);
+                Object.keys(data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element && data[key]) {
+                        element.value = data[key];
+                    }
+                });
+            } catch (e) {
+                console.error('加载缓存失败:', e);
+            }
+        }
+
+        function setupAutoSave() {
+            const saveDebounced = debounce(saveToCache, 500);
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('input', saveDebounced);
+                element.addEventListener('change', saveDebounced);
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), wait);
+            };
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification' + (isError ? ' error' : '');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // 打印预览功能
+        function printPreview() {
+            // 收集表单数据
+            const date = document.getElementById('date').value;
+            const weather = document.getElementById('weather').value;
+            const campus = document.getElementById('campus').value;
+            const dutyLeader = document.getElementById('dutyLeader').value;
+
+            if (!date) {
+                showNotification('请至少填写日期后再预览', true);
+                return;
+            }
+
+            // 格式化日期为YYYYMMDD格式
+            const dateObj = new Date(date);
+            const formattedDate = `${dateObj.getFullYear()}${String(dateObj.getMonth() + 1).padStart(2, '0')}${String(dateObj.getDate()).padStart(2, '0')}`;
+            const displayDate = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+
+            // 收集播报内容
+            const attendance = document.getElementById('attendance').value;
+            const entryExit = document.getElementById('entryExit').value;
+            const learningActivity = document.getElementById('learningActivity').value;
+            const areaActivity = document.getElementById('areaActivity').value;
+            const outdoorActivity = document.getElementById('outdoorActivity').value;
+            const lifeActivity = document.getElementById('lifeActivity').value;
+            const notice = document.getElementById('notice').value;
+            const safety = document.getElementById('safety').value;
+
+            // 生成打印内容
+            const printContent = document.getElementById('printContent');
+            printContent.innerHTML = `
+                <div class="report-header">
+                    <div class="report-title">北辰幼儿园·值班${formattedDate}</div>
+                    <div class="report-meta">
+                        <div class="report-meta-item">
+                            <span class="icon">📅</span>
+                            <span>${displayDate}</span>
+                        </div>
+                        <div class="report-meta-item">
+                            <span class="icon">🌤️</span>
+                            <span>${weather || '未填写'}</span>
+                        </div>
+                        <div class="report-meta-item">
+                            <span class="icon">🏫</span>
+                            <span>${campus || '未填写'}</span>
+                        </div>
+                        <div class="report-meta-item">
+                            <span class="icon">👔</span>
+                            <span>${dutyLeader || '未填写'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-toggle">
+                    <button class="nav-btn active" onclick="toggleSection('today')">
+                        📋 今日播报
+                    </button>
+                    <button class="nav-btn" onclick="toggleSection('guide')">
+                        📖 填写指南
+                    </button>
+                </div>
+
+                <div id="todaySection" class="section-content today-section active">
+                    ${!attendance && !entryExit && !learningActivity && !areaActivity && !outdoorActivity && !lifeActivity && !notice && !safety ?
+                        '<div style="text-align: center; padding: 60px 20px; color: #999;">暂无播报内容</div>' :
+                        `<div class="data-grid">
+                            ${attendance ? `<div class="data-item">
+                                <div class="data-label">👥 出勤情况</div>
+                                <div class="data-content">${attendance}</div>
+                            </div>` : ''}
+
+                            ${entryExit ? `<div class="data-item">
+                                <div class="data-label">🚪 入园离园</div>
+                                <div class="data-content">${entryExit}</div>
+                            </div>` : ''}
+
+                            ${learningActivity ? `<div class="data-item">
+                                <div class="data-label">📚 学习活动</div>
+                                <div class="data-content">${learningActivity}</div>
+                            </div>` : ''}
+
+                            ${areaActivity ? `<div class="data-item">
+                                <div class="data-label">🎨 区域活动</div>
+                                <div class="data-content">${areaActivity}</div>
+                            </div>` : ''}
+
+                            ${outdoorActivity ? `<div class="data-item">
+                                <div class="data-label">⚽ 户外活动</div>
+                                <div class="data-content">${outdoorActivity}</div>
+                            </div>` : ''}
+
+                            ${lifeActivity ? `<div class="data-item">
+                                <div class="data-label">🏃 生活活动</div>
+                                <div class="data-content">${lifeActivity}</div>
+                            </div>` : ''}
+
+                            ${notice ? `<div class="data-item">
+                                <div class="data-label">💡 温馨提示</div>
+                                <div class="data-content">${notice}</div>
+                            </div>` : ''}
+
+                            ${safety ? `<div class="data-item">
+                                <div class="data-label">🛡️ 校园安全</div>
+                                <div class="data-content">${safety}</div>
+                            </div>` : ''}
+                        </div>`
+                    }
+                </div>
+
+                <div id="guideSection" class="section-content guide-section">
+                    <div class="guide-grid">
+                        <div class="guide-item">
+                            <div class="guide-label">👥 出勤情况</div>
+                            <div class="guide-text">教师出勤情况、幼儿出勤情况。</div>
+                        </div>
+
+                        <div class="guide-item">
+                            <div class="guide-label">🚪 入园离园</div>
+                            <div class="guide-text">①晨间检查、晨间锻炼情况；②入园、离园幼儿精神面貌；③校车接送；④离园管理。</div>
+                        </div>
+
+                        <div class="guide-item">
+                            <div class="guide-label">📚 学习活动</div>
+                            <div class="guide-text">①上午观察：活动组织、活动实施、活动效果；②下午观察：活动组织、活动实施、活动效果。</div>
+                        </div>
+
+                        <div class="guide-item">
+                            <div class="guide-label">🎨 区域活动</div>
+                            <div class="guide-text">①活动组织、实施、效果；②幼儿兴趣、常规、材料投放。</div>
+                        </div>
+
+                        <div class="guide-item">
+                            <div class="guide-label">⚽ 户外活动</div>
+                            <div class="guide-text">①观察组织实施、幼儿精神面貌；②安全监护；③户外活动器械使用保管。</div>
+                        </div>
+
+                        <div class="guide-item">
+                            <div class="guide-label">🏃 生活活动</div>
+                            <div class="guide-text">①盥洗、喝水、如厕；②午睡的组织情况；③幼儿离园活动。</div>
+                        </div>
+
+                        <div class="guide-item">
+                            <div class="guide-label">💡 温馨提示</div>
+                            <div class="guide-text">提醒事项、注意事项等。</div>
+                        </div>
+
+                        <div class="guide-item">
+                            <div class="guide-label">🛡️ 校园安全</div>
+                            <div class="guide-text">①安全检查：水、电、气、门窗、围墙、大型玩具等；②幼儿安全管理；③外来人员、车辆管理；④其他。</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 显示模态框
+            document.getElementById('printModal').classList.add('active');
+        }
+
+        function closePrintModal() {
+            document.getElementById('printModal').classList.remove('active');
+        }
+
+        function toggleSection(section) {
+            const todaySection = document.getElementById('todaySection');
+            const guideSection = document.getElementById('guideSection');
+            const navBtns = document.querySelectorAll('.nav-btn');
+
+            if (section === 'today') {
+                todaySection.classList.add('active');
+                guideSection.classList.remove('active');
+                navBtns[0].classList.add('active');
+                navBtns[1].classList.remove('active');
+            } else {
+                todaySection.classList.remove('active');
+                guideSection.classList.add('active');
+                navBtns[0].classList.remove('active');
+                navBtns[1].classList.add('active');
+            }
+        }
+
+        // 点击模态框背景关闭
+        document.getElementById('printModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePrintModal();
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>

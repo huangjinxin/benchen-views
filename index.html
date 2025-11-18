@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>北辰幼儿园每日观察系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrapper {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .main-title {
+            text-align: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-shadow: 0 3px 15px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        .page-indicator {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 17px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .input-box, .select-box {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        .input-box:focus, .select-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .select-box {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+
+        textarea.input-box {
+            min-height: 100px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        /* 时间轴样式 */
+        .timeline-container {
+            max-height: 450px;
+            overflow-y: auto;
+            padding: 10px 5px;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 18px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            align-items: center;
+        }
+
+        .time-input {
+            width: 100px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .event-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+        }
+
+        .add-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* 观察项样式 */
+        .observation-section {
+            margin-bottom: 15px;
+            background: #f8f9ff;
+            border-radius: 15px;
+            border: 2px solid #e8ecff;
+            overflow: hidden;
+        }
+
+        .observation-section.collapsible {
+            padding: 0;
+        }
+
+        .observation-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .collapse-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            margin-bottom: 0;
+        }
+
+        .collapse-header:hover {
+            background: #e8ecff;
+        }
+
+        .collapse-icon {
+            font-size: 16px;
+            transition: transform 0.3s;
+            color: #667eea;
+        }
+
+        .collapsible.collapsed .collapse-icon {
+            transform: rotate(-90deg);
+        }
+
+        .collapse-content {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 25px 25px 25px;
+        }
+
+        .collapsible.collapsed .collapse-content {
+            max-height: 0;
+            padding: 0 25px;
+        }
+
+        .option-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .option-btn {
+            padding: 14px 24px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 导航按钮 */
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 35px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-prev {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* 汇总页样式 */
+        .summary-content {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            line-height: 2;
+            max-height: 550px;
+            overflow-y: auto;
+            border: 2px solid #e8ecff;
+        }
+
+        .summary-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .summary-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            font-size: 16px;
+        }
+
+        .summary-info-item {
+            color: #666;
+        }
+
+        .summary-info-item strong {
+            color: #333;
+        }
+
+        .summary-section {
+            margin-bottom: 20px;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .summary-text {
+            margin-left: 25px;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .summary-timeline-item {
+            margin-left: 25px;
+            padding: 8px 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-copy { background: linear-gradient(135deg, #48bb78, #38a169); }
+        .btn-print { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+        .btn-save { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-restart { background: linear-gradient(135deg, #f56565, #e53e3e); }
+
+        /* 通知 */
+        .notification {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 18px 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            font-weight: 600;
+            font-size: 17px;
+            animation: slideDown 0.4s ease;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            body { 
+                background: white; 
+                padding: 0;
+            }
+            .main-title, .progress-bar, .page-indicator, 
+            .nav-buttons, .action-buttons { 
+                display: none !important; 
+            }
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 20px;
+            }
+            .summary-content {
+                border: none;
+                box-shadow: none;
+                max-height: none;
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .main-title { font-size: 24px; }
+            .container { padding: 25px; }
+            .page-title { font-size: 24px; }
+            .form-row { grid-template-columns: 1fr; }
+            .action-buttons { grid-template-columns: 1fr; }
+        }
+
+        /* 滚动条美化 */
+        .timeline-container::-webkit-scrollbar,
+        .summary-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .timeline-container::-webkit-scrollbar-track,
+        .summary-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .timeline-container::-webkit-scrollbar-thumb,
+        .summary-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="main-title">🌟 北辰幼儿园每日观察系统 🌟</div>
+        
+        <div class="container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 25%"></div>
+            </div>
+            <div class="page-indicator" id="pageIndicator">第 1 页 / 共 4 页</div>
+
+            <!-- 第1页：基本信息 -->
+            <div class="page active" data-page="1">
+                <div class="page-title">📋 基本信息</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">📅 日期</label>
+                        <input type="date" class="input-box" id="date">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🌤️ 天气</label>
+                        <select class="select-box" id="weather">
+                            <option value="">请选择天气</option>
+                            <option value="☀️ 晴天">☀️ 晴天</option>
+                            <option value="⛅ 多云">⛅ 多云</option>
+                            <option value="☁️ 阴天">☁️ 阴天</option>
+                            <option value="🌧️ 雨天">🌧️ 雨天</option>
+                            <option value="❄️ 雪天">❄️ 雪天</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">👨‍🏫 老师姓名</label>
+                        <select class="select-box" id="teacher">
+                            <option value="">请选择老师</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📚 班级</label>
+                        <select class="select-box" id="class">
+                            <option value="">请选择班级</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🏫 学校园区</label>
+                    <select class="select-box" id="school">
+                        <option value="">请选择园区</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 第2页：时间日志 -->
+            <div class="page" data-page="2">
+                <div class="page-title">⏰ 时间日志</div>
+                <div class="timeline-container" id="timelineContainer">
+                    <div class="timeline-item">
+                        <input type="time" class="time-input" value="07:00">
+                        <input type="text" class="event-input" placeholder="请输入活动内容...">
+                    </div>
+                </div>
+                <button class="add-btn" onclick="addTimelineItem()">➕ 添加更多时间记录</button>
+            </div>
+
+            <!-- 第3页：观察要点 -->
+            <div class="page" data-page="3">
+                <div class="page-title">✏️ 今日观察要点</div>
+
+                <!-- 精彩瞬间容器 -->
+                <div class="observation-section collapsible">
+                    <div class="observation-title collapse-header">
+                        📸 精彩瞬间
+                        <span class="collapse-icon">▼</span>
+                    </div>
+                    <div class="collapse-content">
+                        <div class="form-group">
+                            <label class="form-label">🏃 生活活动</label>
+                            <textarea class="input-box" placeholder="请记录生活活动的观察内容..." data-field="lifeActivity"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">⚽ 户外运动</label>
+                            <textarea class="input-box" placeholder="请记录户外运动的观察内容..." data-field="outdoorActivity"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">📚 学习活动</label>
+                            <textarea class="input-box" placeholder="请记录学习活动的观察内容..." data-field="learningActivity"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">🎮 游戏活动</label>
+                            <textarea class="input-box" placeholder="请记录游戏活动的观察内容..." data-field="gameActivity"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="observation-section collapsible">
+                    <div class="observation-title collapse-header">
+                        👨‍👩‍👧 家园共育
+                        <span class="collapse-icon">▼</span>
+                    </div>
+                    <div class="collapse-content">
+                        <textarea class="input-box" placeholder="请记录家园共育的观察内容..." data-field="homeCooperation"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第4页：汇总 -->
+            <div class="page" data-page="4">
+                <div class="page-title">📋 观察记录汇总</div>
+                <div class="summary-content" id="summaryContent"></div>
+                <div class="action-buttons">
+                    <button class="action-btn btn-copy" onclick="copyText()">📋 复制文本</button>
+                    <button class="action-btn btn-print" onclick="printSummary()">🖨️ 打印</button>
+                    <button class="action-btn btn-save" onclick="saveToServer()">💾 保存记录</button>
+                    <button class="action-btn btn-restart" onclick="restartForm()">🔄 重新填写</button>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="action-btn" style="background: linear-gradient(135deg, #ed8936, #dd6b20); max-width: 400px; width: 100%;" onclick="window.location.href='records.html'">📚 查看所有记录</button>
+                </div>
+            </div>
+
+            <div class="nav-buttons" id="navButtons">
+                <button class="btn btn-prev" id="prevBtn" onclick="prevPage()">⬅️ 上一步</button>
+                <button class="btn btn-next" id="nextBtn" onclick="nextPage()">下一步 ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="api-config.js"></script>
+    <script>
+        let currentPage = 1;
+        const totalPages = 4;
+
+        async function init() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+
+            // 预加载关联数据
+            try {
+                await DataTransformer.loadReferenceData(apiClient);
+                console.log('关联数据加载成功');
+
+                // 填充下拉框选项
+                populateSelectOptions();
+            } catch (error) {
+                console.error('加载关联数据失败:', error);
+                showNotification('⚠️ 加载数据失败，请刷新页面重试', true);
+            }
+
+            loadFromCache();
+            setupEventListeners();
+            setupCollapse();
+            setupAutoSave();
+            updateProgress();
+        }
+
+        // 填充下拉框选项
+        function populateSelectOptions() {
+            // 填充园区选项
+            const schoolSelect = document.getElementById('school');
+            schoolSelect.innerHTML = '<option value="">请选择园区</option>';
+            if (DataTransformer.cache.campuses) {
+                DataTransformer.cache.campuses.forEach(campus => {
+                    const option = document.createElement('option');
+                    option.value = campus.name;
+                    option.textContent = campus.name;
+                    schoolSelect.appendChild(option);
+                });
+            }
+
+            // 填充班级选项
+            const classSelect = document.getElementById('class');
+            classSelect.innerHTML = '<option value="">请选择班级</option>';
+            if (DataTransformer.cache.classes) {
+                DataTransformer.cache.classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.name;
+                    option.textContent = cls.name;
+                    classSelect.appendChild(option);
+                });
+            }
+
+            // 填充教师选项
+            const teacherSelect = document.getElementById('teacher');
+            teacherSelect.innerHTML = '<option value="">请选择老师</option>';
+            if (DataTransformer.cache.teachers) {
+                // 如果返回的是分页数据
+                const teacherList = DataTransformer.cache.teachers.data || DataTransformer.cache.teachers;
+                teacherList.forEach(teacher => {
+                    const option = document.createElement('option');
+                    option.value = teacher.name;
+                    option.textContent = teacher.name;
+                    teacherSelect.appendChild(option);
+                });
+            }
+
+            console.log('下拉框选项已填充');
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const type = group.dataset.type;
+
+                    if (type === 'single') {
+                        group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                        this.classList.add('selected');
+                    } else {
+                        this.classList.toggle('selected');
+                    }
+                });
+            });
+        }
+
+        function setupCollapse() {
+            document.querySelectorAll('.collapse-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const section = this.closest('.collapsible');
+                    section.classList.toggle('collapsed');
+                });
+            });
+        }
+
+        function updateProgress() {
+            const progress = (currentPage / totalPages) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('pageIndicator').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const navButtons = document.getElementById('navButtons');
+
+            prevBtn.disabled = currentPage === 1;
+
+            if (currentPage === totalPages) {
+                nextBtn.style.display = 'none';
+                prevBtn.style.display = 'flex';
+                navButtons.style.display = 'flex';
+            } else {
+                nextBtn.style.display = 'flex';
+                prevBtn.style.display = 'flex';
+                navButtons.style.display = 'flex';
+                nextBtn.textContent = currentPage === 1 ? '开始填写 ➡️' : '下一步 ➡️';
+            }
+        }
+
+        function nextPage() {
+            if (currentPage === 1 && !validatePage1()) return;
+
+            if (currentPage < totalPages) {
+                document.querySelector(`.page[data-page="${currentPage}"]`).classList.remove('active');
+                currentPage++;
+                document.querySelector(`.page[data-page="${currentPage}"]`).classList.add('active');
+                
+                if (currentPage === totalPages) {
+                    generateSummary();
+                }
+                
+                updateProgress();
+                updateButtons();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                document.querySelector(`.page[data-page="${currentPage}"]`).classList.remove('active');
+                currentPage--;
+                document.querySelector(`.page[data-page="${currentPage}"]`).classList.add('active');
+                updateProgress();
+                updateButtons();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function validatePage1() {
+            const teacher = document.getElementById('teacher').value;
+            const className = document.getElementById('class').value;
+            const weather = document.getElementById('weather').value;
+
+            if (!teacher || !className || !weather) {
+                showNotification('请填写完整的基本信息', true);
+                return false;
+            }
+            return true;
+        }
+
+        function addTimelineItem() {
+            const container = document.getElementById('timelineContainer');
+            const items = container.querySelectorAll('.timeline-item');
+            const lastItem = items[items.length - 1];
+            const lastTime = lastItem.querySelector('.time-input').value;
+            
+            let nextTime = '08:00';
+            if (lastTime) {
+                const [hours, minutes] = lastTime.split(':');
+                const nextHour = (parseInt(hours) + 1) % 24;
+                nextTime = `${String(nextHour).padStart(2, '0')}:${minutes}`;
+            }
+
+            const newItem = document.createElement('div');
+            newItem.className = 'timeline-item';
+            newItem.innerHTML = `
+                <input type="time" class="time-input" value="${nextTime}">
+                <input type="text" class="event-input" placeholder="请输入活动内容...">
+            `;
+            container.appendChild(newItem);
+            
+            setTimeout(() => {
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        function generateSummary() {
+            const date = document.getElementById('date').value;
+            const weather = document.getElementById('weather').value;
+            const teacher = document.getElementById('teacher').value;
+            const className = document.getElementById('class').value;
+            const school = document.getElementById('school').value;
+
+            const dateObj = new Date(date);
+            const formattedDate = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+
+            // 收集时间日志
+            const timeline = [];
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                const time = item.querySelector('.time-input').value;
+                const event = item.querySelector('.event-input').value;
+                if (time && event) {
+                    timeline.push({ time, event });
+                }
+            });
+
+            // 收集观察要点（新的文本框内容）
+            const observations = {};
+            const wonderfulMomentFields = [
+                { field: 'lifeActivity', label: '🏃 生活活动' },
+                { field: 'outdoorActivity', label: '⚽ 户外运动' },
+                { field: 'learningActivity', label: '📚 学习活动' },
+                { field: 'gameActivity', label: '🎮 游戏活动' }
+            ];
+
+            wonderfulMomentFields.forEach(({ field, label }) => {
+                const textarea = document.querySelector(`[data-field="${field}"]`);
+                if (textarea && textarea.value.trim()) {
+                    observations[field] = { label, content: textarea.value.trim() };
+                }
+            });
+
+            // 家园共育单独处理
+            const homeCooperationTextarea = document.querySelector(`[data-field="homeCooperation"]`);
+            const homeCooperationContent = homeCooperationTextarea ? homeCooperationTextarea.value.trim() : '';
+
+            // 生成汇总HTML
+            let summary = `<div class="summary-header">北辰幼儿园观察日志（${formattedDate}）<br>${teacher}老师</div>`;
+
+            summary += `<div class="summary-info">`;
+            summary += `<div class="summary-info-item"><strong>学校：</strong>${school}</div>`;
+            summary += `<div class="summary-info-item"><strong>班级：</strong>${className}</div>`;
+            summary += `<div class="summary-info-item"><strong>天气：</strong>${weather}</div>`;
+            summary += `</div>`;
+
+            if (timeline.length > 0) {
+                summary += `<div class="summary-section">`;
+                summary += `<div class="summary-label">⏰ 时间日志</div>`;
+                timeline.forEach(item => {
+                    summary += `<div class="summary-timeline-item"><strong>${item.time}</strong> ${item.event}</div>`;
+                });
+                summary += `</div>`;
+            }
+
+            // 显示精彩瞬间（包含4个活动）
+            if (Object.keys(observations).length > 0) {
+                summary += `<div class="summary-section">`;
+                summary += `<div class="summary-label">📸 精彩瞬间</div>`;
+                Object.keys(observations).forEach(key => {
+                    const { label, content } = observations[key];
+                    summary += `<div style="margin-left: 15px; margin-bottom: 15px;">`;
+                    summary += `<div style="font-weight: 600; color: #333; margin-bottom: 5px;">${label}</div>`;
+                    summary += `<div class="summary-text">${content.replace(/\n/g, '<br>')}</div>`;
+                    summary += `</div>`;
+                });
+                summary += `</div>`;
+            }
+
+            // 显示家园共育
+            if (homeCooperationContent) {
+                summary += `<div class="summary-section">`;
+                summary += `<div class="summary-label">👨‍👩‍👧 家园共育</div>`;
+                summary += `<div class="summary-text">${homeCooperationContent.replace(/\n/g, '<br>')}</div>`;
+                summary += `</div>`;
+            }
+
+            document.getElementById('summaryContent').innerHTML = summary;
+        }
+
+        function copyText() {
+            const content = document.getElementById('summaryContent').innerText;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(content).then(() => {
+                    showNotification('✅ 已复制到剪贴板！');
+                });
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = content;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('✅ 已复制到剪贴板！');
+            }
+        }
+
+        function printSummary() {
+            window.print();
+        }
+
+        async function saveToServer() {
+            const data = collectFormData();
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '💾 保存中...';
+            btn.disabled = true;
+
+            try {
+                // 转换为新API格式
+                const newFormatData = DataTransformer.transformToNewFormat(data);
+
+                // 保存到新服务器
+                const response = await apiClient.createDailyObservation(newFormatData);
+
+                showNotification('✅ 保存成功！记录已保存到服务器');
+
+                // 同时保存到localStorage作为备份
+                const recordKey = `observation_${data.id}`;
+                localStorage.setItem(recordKey, JSON.stringify(data));
+
+                // 清除表单缓存
+                setTimeout(() => {
+                    if (confirm('记录已保存！是否要清空表单开始新的记录？')) {
+                        localStorage.removeItem('observationFormData');
+                        window.location.href = 'index.html';
+                    }
+                }, 1500);
+
+            } catch (error) {
+                console.error('保存错误:', error);
+                showNotification('❌ 保存失败：' + error.message, true);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function collectFormData() {
+            const date = document.getElementById('date').value;
+            const weather = document.getElementById('weather').value;
+            const teacher = document.getElementById('teacher').value;
+            const className = document.getElementById('class').value;
+            const school = document.getElementById('school').value;
+
+            const timeline = [];
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                const time = item.querySelector('.time-input').value;
+                const event = item.querySelector('.event-input').value;
+                if (time && event) {
+                    timeline.push({ time, event });
+                }
+            });
+
+            // 收集观察要点（新的文本框内容）
+            const observations = {};
+            const observationFields = [
+                'lifeActivity',
+                'outdoorActivity',
+                'learningActivity',
+                'gameActivity',
+                'homeCooperation'
+            ];
+
+            observationFields.forEach(field => {
+                const textarea = document.querySelector(`[data-field="${field}"]`);
+                if (textarea && textarea.value.trim()) {
+                    observations[field] = textarea.value.trim();
+                }
+            });
+
+            return {
+                id: Date.now().toString(),
+                date,
+                weather,
+                teacher,
+                class: className,
+                school,
+                timeline,
+                observations,
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        function restartForm() {
+            if (confirm('确定要重新填写吗？所有内容将被清空。')) {
+                localStorage.removeItem('observationFormData');
+                location.reload();
+            }
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification' + (isError ? ' error' : '');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function saveToCache() {
+            const data = {
+                // 基本信息
+                date: document.getElementById('date')?.value || '',
+                weather: document.getElementById('weather')?.value || '',
+                teacher: document.getElementById('teacher')?.value || '',
+                class: document.getElementById('class')?.value || '',
+                school: document.getElementById('school')?.value || '',
+
+                // 时间日志
+                timeline: [],
+
+                // 观察要点
+                observations: {}
+            };
+
+            // 收集时间日志
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                const time = item.querySelector('.time-input')?.value || '';
+                const event = item.querySelector('.event-input')?.value || '';
+                data.timeline.push({ time, event });
+            });
+
+            // 收集所有textarea的内容
+            document.querySelectorAll('textarea[data-field]').forEach(textarea => {
+                const field = textarea.dataset.field;
+                data.observations[field] = textarea.value;
+            });
+
+            // 保存到localStorage
+            try {
+                localStorage.setItem('observationFormData', JSON.stringify(data));
+            } catch (e) {
+                console.error('保存到缓存失败:', e);
+            }
+        }
+
+        function loadFromCache() {
+            try {
+                const cached = localStorage.getItem('observationFormData');
+                if (!cached) return;
+
+                const data = JSON.parse(cached);
+
+                // 恢复基本信息
+                if (data.date && document.getElementById('date')) {
+                    document.getElementById('date').value = data.date;
+                }
+                if (data.weather && document.getElementById('weather')) {
+                    document.getElementById('weather').value = data.weather;
+                }
+                if (data.teacher && document.getElementById('teacher')) {
+                    document.getElementById('teacher').value = data.teacher;
+                }
+                if (data.class && document.getElementById('class')) {
+                    document.getElementById('class').value = data.class;
+                }
+                if (data.school && document.getElementById('school')) {
+                    document.getElementById('school').value = data.school;
+                }
+
+                // 恢复时间日志
+                if (data.timeline && data.timeline.length > 0) {
+                    const container = document.getElementById('timelineContainer');
+                    if (container) {
+                        container.innerHTML = '';
+                        data.timeline.forEach(item => {
+                            const newItem = document.createElement('div');
+                            newItem.className = 'timeline-item';
+                            newItem.innerHTML = `
+                                <input type="time" class="time-input" value="${item.time || ''}">
+                                <input type="text" class="event-input" placeholder="请输入活动内容..." value="${item.event || ''}">
+                            `;
+                            container.appendChild(newItem);
+                        });
+                    }
+                }
+
+                // 恢复观察要点
+                if (data.observations) {
+                    Object.keys(data.observations).forEach(field => {
+                        const textarea = document.querySelector(`textarea[data-field="${field}"]`);
+                        if (textarea) {
+                            textarea.value = data.observations[field];
+                        }
+                    });
+                }
+
+                console.log('已从缓存恢复数据');
+            } catch (e) {
+                console.error('从缓存加载失败:', e);
+            }
+        }
+
+        function setupAutoSave() {
+            // 监听所有input、select、textarea的变化
+            const saveDebounced = debounce(saveToCache, 500);
+
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('input', saveDebounced);
+                element.addEventListener('change', saveDebounced);
+            });
+
+            // 监听时间日志容器的变化
+            const timelineContainer = document.getElementById('timelineContainer');
+            if (timelineContainer) {
+                const observer = new MutationObserver(saveDebounced);
+                observer.observe(timelineContainer, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true,
+                    attributes: true
+                });
+            }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        init();
+    </script>
+</body>
+</html>

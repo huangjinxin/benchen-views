@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>值班播报记录查询 - 北辰幼儿园</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .main-title {
+            text-align: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-shadow: 0 3px 15px rgba(0,0,0,0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .search-box, .filter-select {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .filter-select {
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .records-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .records-count {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .records-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .record-card {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #e8ecff;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .record-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .record-date {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .record-weather {
+            font-size: 24px;
+        }
+
+        .record-info {
+            margin-bottom: 10px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .record-info strong {
+            color: #333;
+        }
+
+        .record-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: #f0f0f0;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .detail-section {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e8ecff;
+            border-left: 4px solid #5c6bc0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #3f4da3;
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-text {
+            color: #333;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 18px 35px;
+            border-radius: 15px;
+            display: none;
+            z-index: 2000;
+            font-weight: 600;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="main-title">📢 值班播报记录查询</div>
+
+        <div class="header-actions">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 搜索值班领导、园区...">
+
+            <select class="filter-select" id="campusFilter">
+                <option value="">全部园区</option>
+            </select>
+
+            <button class="btn btn-success" onclick="window.location.href='duty-report.html'">➕ 新建播报</button>
+            <button class="btn btn-danger" onclick="clearAllRecords()">🗑️ 清空所有</button>
+        </div>
+
+        <div class="container">
+            <div class="records-header">
+                <div class="records-count" id="recordsCount">共 0 条记录</div>
+                <button class="btn btn-primary" onclick="exportRecords()">📥 导出数据</button>
+            </div>
+
+            <div class="records-list" id="recordsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-text">暂无播报记录</div>
+                    <button class="btn btn-success" onclick="window.location.href='duty-report.html'">创建第一条记录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">播报记录详情</div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="detailContent"></div>
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="printDetail()">🖨️ 打印</button>
+                <button class="btn btn-success" style="flex: 1;" onclick="copyDetail()">📋 复制</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="api-config.js"></script>
+    <script>
+        let allRecords = [];
+        let currentDetailRecord = null;
+
+        async function init() {
+            try {
+                await DataTransformer.loadReferenceData(apiClient);
+                populateFilterOptions();
+            } catch (error) {
+                console.error('加载关联数据失败:', error);
+            }
+
+            loadRecords();
+            setupEventListeners();
+        }
+
+        function populateFilterOptions() {
+            const campusFilter = document.getElementById('campusFilter');
+            if (DataTransformer.cache.campuses) {
+                DataTransformer.cache.campuses.forEach(campus => {
+                    const option = document.createElement('option');
+                    option.value = campus.name;
+                    option.textContent = campus.name;
+                    campusFilter.appendChild(option);
+                });
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchBox').addEventListener('input', filterRecords);
+            document.getElementById('campusFilter').addEventListener('change', filterRecords);
+        }
+
+        async function loadRecords() {
+            try {
+                console.log('开始加载值班播报记录...');
+                const response = await apiClient.getDutyReports();
+                console.log('API返回数据:', response);
+
+                const recordList = response.data || response;
+
+                if (!Array.isArray(recordList)) {
+                    allRecords = [];
+                    displayRecords(allRecords);
+                    return;
+                }
+
+                allRecords = recordList.map(record => ({
+                    id: record.id,
+                    date: record.date,
+                    weather: record.weather,
+                    campus: DataTransformer.findCampusNameById(record.campusId) || '未知',
+                    dutyLeader: DataTransformer.findLeaderNameById(record.dutyLeaderId) || '未知',
+                    attendance: record.attendance || '',
+                    entryExit: record.entryExit || '',
+                    learningActivity: record.learningActivity || '',
+                    areaActivity: record.areaActivity || '',
+                    outdoorActivity: record.outdoorActivity || '',
+                    lifeActivity: record.lifeActivity || '',
+                    notice: record.notice || '',
+                    safety: record.safety || ''
+                }));
+
+                allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+                console.log(`✅ 成功加载 ${allRecords.length} 条记录`);
+                displayRecords(allRecords);
+            } catch (error) {
+                console.error('加载记录失败:', error);
+                showNotification('❌ 加载记录失败：' + error.message, true);
+                allRecords = [];
+                displayRecords(allRecords);
+            }
+        }
+
+        function displayRecords(records) {
+            const listContainer = document.getElementById('recordsList');
+            const countElement = document.getElementById('recordsCount');
+
+            countElement.textContent = `共 ${records.length} 条记录`;
+
+            if (records.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">暂无播报记录</div>
+                        <button class="btn btn-success" onclick="window.location.href='duty-report.html'">创建第一条记录</button>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = '';
+            records.forEach(record => {
+                const card = createRecordCard(record);
+                listContainer.appendChild(card);
+            });
+        }
+
+        function createRecordCard(record) {
+            const card = document.createElement('div');
+            card.className = 'record-card';
+
+            const dateObj = new Date(record.date);
+            const formattedDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
+
+            card.innerHTML = `
+                <div class="record-header">
+                    <div class="record-date">${formattedDate}</div>
+                    <div class="record-weather">${record.weather || ''}</div>
+                </div>
+                <div class="record-info">
+                    <strong>值班领导：</strong>${record.dutyLeader}<br>
+                    <strong>园区：</strong>${record.campus}
+                </div>
+                <div class="record-actions">
+                    <button class="btn-small btn-view" onclick="viewRecord('${record.id}')">查看详情</button>
+                    <button class="btn-small btn-delete" onclick="deleteRecord('${record.id}')">删除</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function filterRecords() {
+            const searchText = document.getElementById('searchBox').value.toLowerCase();
+            const campusFilter = document.getElementById('campusFilter').value;
+
+            const filtered = allRecords.filter(record => {
+                const matchSearch = !searchText ||
+                    (record.dutyLeader && record.dutyLeader.toLowerCase().includes(searchText)) ||
+                    (record.campus && record.campus.toLowerCase().includes(searchText));
+
+                const matchCampus = !campusFilter || record.campus === campusFilter;
+
+                return matchSearch && matchCampus;
+            });
+
+            displayRecords(filtered);
+        }
+
+        function viewRecord(id) {
+            const record = allRecords.find(r => r.id === id);
+            if (!record) return;
+
+            currentDetailRecord = record;
+
+            const dateObj = new Date(record.date);
+            const formattedDate = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+
+            const fields = [
+                { key: 'attendance', label: '👥 出勤情况' },
+                { key: 'entryExit', label: '🚪 入园离园' },
+                { key: 'learningActivity', label: '📚 学习活动' },
+                { key: 'areaActivity', label: '🎨 区域活动' },
+                { key: 'outdoorActivity', label: '⚽ 户外活动' },
+                { key: 'lifeActivity', label: '🏃 生活活动' },
+                { key: 'notice', label: '💡 温馨提示' },
+                { key: 'safety', label: '🛡️ 校园安全' }
+            ];
+
+            let gridContent = '';
+            fields.forEach(({ key, label }) => {
+                if (record[key]) {
+                    gridContent += `
+                        <div class="detail-section">
+                            <div class="detail-label">${label}</div>
+                            <div class="detail-text">${record[key]}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            const content = `
+                <div style="text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 3px solid #5c6bc0;">
+                    值班播报（${formattedDate}）
+                </div>
+                <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; color: #666; font-size: 16px;">
+                    <div><strong>园区：</strong>${record.campus}</div>
+                    <div><strong>值班领导：</strong>${record.dutyLeader}</div>
+                    <div><strong>天气：</strong>${record.weather}</div>
+                </div>
+                <div class="detail-grid">
+                    ${gridContent}
+                </div>
+            `;
+
+            document.getElementById('detailContent').innerHTML = content;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        async function deleteRecord(id) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+
+            try {
+                await apiClient.deleteDutyReport(id);
+                showNotification('✅ 记录已删除');
+                loadRecords();
+            } catch (error) {
+                console.error('删除失败:', error);
+                showNotification('❌ 删除失败：' + error.message, true);
+            }
+        }
+
+        async function clearAllRecords() {
+            if (!confirm('确定要清空所有记录吗？此操作不可恢复！')) return;
+
+            try {
+                const deletePromises = allRecords.map(record =>
+                    apiClient.deleteDutyReport(record.id)
+                );
+                await Promise.all(deletePromises);
+                showNotification(`✅ 已清空 ${allRecords.length} 条记录`);
+                loadRecords();
+            } catch (error) {
+                console.error('清空失败:', error);
+                showNotification('❌ 清空失败：' + error.message, true);
+            }
+        }
+
+        function exportRecords() {
+            if (allRecords.length === 0) {
+                showNotification('❌ 没有可导出的记录', true);
+                return;
+            }
+
+            const dataStr = JSON.stringify(allRecords, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `值班播报_${new Date().getTime()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showNotification('✅ 导出成功');
+        }
+
+        function printDetail() {
+            window.print();
+        }
+
+        function copyDetail() {
+            const content = document.getElementById('detailContent').innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(content).then(() => {
+                    showNotification('✅ 已复制到剪贴板！');
+                });
+            }
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification' + (isError ? ' error' : '');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北辰幼儿园管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .wrapper {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .main-title {
+            text-align: center;
+            color: white;
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 3px 15px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .module-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .module-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .module-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .module-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 30px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 32px;
+            }
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="main-title">🌟 北辰幼儿园管理系统</div>
+        <div class="subtitle">数据记录与查询平台</div>
+
+        <div class="modules-grid">
+            <a href="index.html" class="module-card">
+                <div class="module-icon">📝</div>
+                <div class="module-title">每日观察记录</div>
+                <div class="module-desc">填写幼儿每日观察记录<br>包含生活、学习、游戏等活动</div>
+            </a>
+
+            <a href="records.html" class="module-card">
+                <div class="module-icon">🔍</div>
+                <div class="module-title">观察记录查询</div>
+                <div class="module-desc">查看和管理每日观察记录<br>支持搜索、筛选、导出</div>
+            </a>
+
+            <a href="duty-report.html" class="module-card">
+                <div class="module-icon">📢</div>
+                <div class="module-title">值班播报记录</div>
+                <div class="module-desc">填写值班领导播报内容<br>包含出勤、活动、安全等信息</div>
+            </a>
+
+            <a href="duty-reports.html" class="module-card">
+                <div class="module-icon">📊</div>
+                <div class="module-title">播报记录查询</div>
+                <div class="module-desc">查看和管理值班播报记录<br>支持搜索、筛选、导出</div>
+            </a>
+        </div>
+
+        <div class="footer">
+            © 2025 北辰幼儿园 | 数据入口系统
+        </div>
+    </div>
+</body>
+</html>
