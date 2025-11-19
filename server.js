@@ -271,13 +271,15 @@ app.delete('/api/records', async (_req, res) => {
 
 // 启动服务器
 async function startServer() {
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`
 ╔════════════════════════════════════════════════════╗
 ║                                                    ║
 ║   🌟 北辰幼儿园每日观察系统 启动成功！          ║
 ║                                                    ║
-║   📍 访问地址: http://localhost:${PORT}              ║
+║   📍 本地访问: http://localhost:${PORT}              ║
+║   📍 内网访问: http://192.168.88.228:${PORT}         ║
+║   📍 外网访问: http://beichen.706tech.cn:${PORT}     ║
 ║   💾 数据库: PostgreSQL (kindergarten)           ║
 ║   ⏰ 启动时间: ${new Date().toLocaleString('zh-CN')}   ║
 ║                                                    ║

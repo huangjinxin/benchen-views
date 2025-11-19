@@ -1,6 +1,16 @@
 // API配置文件 - 用于连接到北辰幼儿园管理系统
 const API_CONFIG = {
-    baseURL: 'http://localhost:8891',
+    // 动态获取API地址，使用当前访问的主机名但端口为8891
+    baseURL: (() => {
+        // 如果在浏览器环境
+        if (typeof window !== 'undefined') {
+            const protocol = window.location.protocol; // http: 或 https:
+            const hostname = window.location.hostname; // 192.168.88.228 或 beichen.706tech.cn 或 localhost
+            return `${protocol}//${hostname}:8891`;
+        }
+        // 如果在Node.js环境（如测试），使用localhost
+        return 'http://localhost:8891';
+    })(),
 
     // 自动登录凭证（后台自动获取token用）
     credentials: {
